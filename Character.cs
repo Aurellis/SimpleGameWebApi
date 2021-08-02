@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 
 namespace TestTaskGame
 {
-    public class CharactersPlayer
+    public class Character
     {
-        public string Name { get; set; }
     }
 }

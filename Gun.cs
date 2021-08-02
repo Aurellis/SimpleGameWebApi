@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 
 namespace TestTaskGame
 {
-    public class Guns
-
+    public class Gun
     {
-        public string Name { get; set; }
     }
 }

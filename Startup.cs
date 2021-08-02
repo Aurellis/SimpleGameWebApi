@@ -26,6 +26,10 @@ namespace TestTaskGame
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+            services.AddScoped<IPlayerService, PlayerService>();
+            services.AddScoped<ISQLService, SQLService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,7 +42,15 @@ namespace TestTaskGame
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
+
+            app.UseCors(x => x
+                                .AllowAnyOrigin()
+                                .AllowAnyMethod()
+                                .AllowAnyHeader()
+                              ) ;
+
+            app.UseMiddleware<JwtMid>();
 
             app.UseEndpoints(endpoints =>
             {

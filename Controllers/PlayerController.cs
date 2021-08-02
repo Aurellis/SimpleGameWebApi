@@ -1,39 +1,64 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace TestTaskGame.Controllers
 {
-    [Authorize]
+    
     [Route("api/[controller]")]
     [ApiController]
     public class PlayerController : ControllerBase
     {
-        private readonly ILogger<PlayerController> _logger;
+        private readonly IPlayerService _playerService;
 
-        public PlayerController(ILogger<PlayerController> logger)
+        public PlayerController(IPlayerService playerService)
         {
-            _logger = logger;
+            _playerService = playerService;
         }
 
+        [HttpPost("register")]
+        public IActionResult Register(AutentificateRequest request)
+        {
+            var respose = _playerService.Register(request);
+
+            if (respose == null)
+            {
+                return BadRequest(new { message = "Registration failed" });
+            }
+
+            return new JsonResult(new { message = "Registration complete" }) { StatusCode = StatusCodes.Status201Created};
+        }
+
+        [HttpPost("autentificate")]
+        public IActionResult Autentificate(AutentificateRequest request)
+        {
+            var respose = _playerService.Autentificate(request);
+
+            if (respose == null)
+            {
+                return BadRequest(new { message = "Incorrect username or password" });
+            }
+            return Ok(respose);
+        }
+
+        [Authorize]
         [HttpGet]
-        public async Task<ActionResult<Player>> Get()
+        public IActionResult GetPlayer()
         {
-            return  new Player() { Name = "Is Name" };
-        }
+            Player player = (Player)HttpContext.Items["Player"];
 
-        
-        [HttpGet("{name}")]
-        public async Task<ActionResult<Player>> Get(string name)
-        {
-            return new Player() { Name = name};
+            //var jwtToken = (JwtSecurityToken)validatedToken;
+            //var playerName = jwtToken.Claims.First(x => x.Type == "name").Value;
+            return Ok(_playerService.GetByName(player.Name));
         }
-
 
     }
 }
