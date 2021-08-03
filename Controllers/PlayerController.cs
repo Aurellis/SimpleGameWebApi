@@ -112,7 +112,6 @@ namespace TestTaskGame.Controllers
         public IActionResult PayCharacter(string charactername)
         {
             Player player = (Player)HttpContext.Items["Player"];
-            //return Ok(_playerService.AllGuns(player.Name).Where(c => c.Unlocked == true));
             return Ok(new { message = "Template for pay character " + charactername });
         }
 
