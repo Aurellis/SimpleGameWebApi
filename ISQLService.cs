@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -11,8 +12,8 @@ namespace TestTaskGame
         bool Register(Player player);
         bool Pay(string playerName, string itemName);
         Player GetPlayer(Player player);
-        List<Gun> GetGuns();
-        List<Character> GetCharacters();        
+        List<Gun> GetGuns(string playerName);
+        List<Character> GetCharacters(string playerName);        
     }
 
     public class SQLService : ISQLService
@@ -44,8 +45,9 @@ namespace TestTaskGame
                 adapter.Fill(dataTable);
 
             }
-            catch (System.Exception )
+            catch (System.Exception ex)
             {
+                string mes = ex.Message;
             }
             finally
             {
@@ -80,14 +82,74 @@ namespace TestTaskGame
 
         }
 
-        public List<Character> GetCharacters()
+        public List<Character> GetCharacters(string playerName)
         {
-            throw new System.NotImplementedException();
+            string query = "select *, case when exists(select char_name from players_characters where player_name = '" + playerName + "' and char_name = characters.char_name) then 1 else 0 end as char_unlocked from characters ";
+
+            DataTable charTable = GetData(query);
+
+            List<Character> allCharacters = new List<Character>();
+
+            for (int i = 0; i < charTable.Rows.Count; i++)
+            {
+                allCharacters.Add(new Character()
+                {   Name = charTable.Rows[i].Field<string>("char_name"),
+                     Price = charTable.Rows[i].Field<int>("char_price"),
+                     Unlocked = Convert.ToBoolean(charTable.Rows[i].Field<int>("char_unlocked"))
+                });
+            }
+
+            foreach (var character in allCharacters)
+            {
+                query = " exec GetGunsCharacter '" + playerName+ "' ,'"+character.Name+"' ";
+
+                DataTable gunTable = GetData(query);
+
+                character.AvailableGuns = new List<Gun>();
+
+                for (int i = 0; i < gunTable.Rows.Count; i++)
+                {                    
+                    character.AvailableGuns.Add(new Gun()
+                    {
+                        Name = gunTable.Rows[i].Field<string>("gun_name"),
+                        Damage = gunTable.Rows[i].Field<int>("gun_damage"),
+                        MaxLevel = gunTable.Rows[i].Field<int>("gun_lvl"),
+                        Price = gunTable.Rows[i].Field<int>("gun_price"),
+                        NumBullets = gunTable.Rows[i].Field<int>("gun_num_bullets"),
+                        RateOfFire = gunTable.Rows[i].Field<int>("gun_rate_of_fire"),
+                        RechargeRate = gunTable.Rows[i].Field<int>("gun_recharge_rate"),
+                        Unlocked = Convert.ToBoolean(gunTable.Rows[i].Field<int>("gun_unlocked"))
+                    });
+                }
+                
+            }
+
+            return allCharacters;
+
         }
 
-        public List<Gun> GetGuns()
+        public List<Gun> GetGuns(string playerName)
         {
-            throw new System.NotImplementedException();
+            string query = "exec GetGuns '"+ playerName + "'";
+
+            DataTable gunTable = GetData(query);
+
+            List<Gun> allGuns = new List<Gun>();
+
+            for (int i = 0; i < gunTable.Rows.Count; i++)
+            {
+                allGuns.Add(new Gun() {Name = gunTable.Rows[i].Field<string>("gun_name"),
+                                                   Damage = gunTable.Rows[i].Field<int>("gun_damage"),
+                                                   MaxLevel = gunTable.Rows[i].Field<int>("gun_lvl"),
+                                                   Price = gunTable.Rows[i].Field<int>("gun_price"),
+                                                   NumBullets = gunTable.Rows[i].Field<int>("gun_num_bullets"),
+                                                   RateOfFire = gunTable.Rows[i].Field<int>("gun_rate_of_fire"),
+                                                   RechargeRate = gunTable.Rows[i].Field<int>("gun_recharge_rate"),
+                                                   Unlocked = Convert.ToBoolean(gunTable.Rows[i].Field<int>("gun_unlocked"))
+                                                  } );
+            }
+
+            return allGuns;
         }
 
         public Player GetPlayer(Player player)

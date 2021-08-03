@@ -16,6 +16,8 @@ namespace TestTaskGame
         JsonResult Register(AutentificateRequest request);
         AutentificateResponse Autentificate(AutentificateRequest request);        
         Player GetByName(string name);
+        List<Gun> AllGuns(string name);
+        List<Character> AllCharacters(string name);
     }
 
     public class PlayerService : IPlayerService
@@ -48,7 +50,7 @@ namespace TestTaskGame
             {
                 return null;
             }
-            var token = genToken(player);
+            var token = GenToken(player);
 
             return new AutentificateResponse(player, token);
         }
@@ -58,7 +60,17 @@ namespace TestTaskGame
             return _sqlService.GetPlayer(new Player() { Name = name});
         }
 
-        private string genToken(Player player)
+        public List<Gun> AllGuns(string name)
+        {
+            return _sqlService.GetGuns(name);
+        }
+
+        public List<Character> AllCharacters(string name)
+        {
+            return _sqlService.GetCharacters(name);
+        }
+
+        private string GenToken(Player player)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);

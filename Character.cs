@@ -7,5 +7,9 @@ namespace TestTaskGame
 {
     public class Character
     {
+        public string Name { get; set; }
+        public int Price { get; set; }
+        public bool Unlocked { get; set; }
+        public List<Gun> AvailableGuns { get; set; }
     }
 }

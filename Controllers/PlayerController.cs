@@ -54,11 +54,68 @@ namespace TestTaskGame.Controllers
         public IActionResult GetPlayer()
         {
             Player player = (Player)HttpContext.Items["Player"];
-
-            //var jwtToken = (JwtSecurityToken)validatedToken;
-            //var playerName = jwtToken.Claims.First(x => x.Type == "name").Value;
             return Ok(_playerService.GetByName(player.Name));
         }
+
+        [Authorize]
+        [HttpGet("allguns")]
+        public IActionResult AllGuns()
+        {
+            Player player = (Player)HttpContext.Items["Player"];
+            return Ok(_playerService.AllGuns(player.Name));
+        }
+
+        [Authorize]
+        [HttpGet("allcharacters")]
+        public IActionResult AllCharacters()
+        {
+            Player player = (Player)HttpContext.Items["Player"];
+            return Ok(_playerService.AllCharacters(player.Name));
+        }
+
+        [Authorize]
+        [HttpGet("mycharacters")]
+        public IActionResult MyCharacters()
+        {
+            Player player = (Player)HttpContext.Items["Player"];
+            return Ok(_playerService.AllCharacters(player.Name).Where(c => c.Unlocked == true));
+        }
+
+        [Authorize]
+        [HttpGet("myguns")]
+        public IActionResult MyGuns()
+        {
+            Player player = (Player)HttpContext.Items["Player"];
+            return Ok(_playerService.AllGuns(player.Name).Where(c => c.Unlocked == true));
+        }
+
+        [Authorize]
+        [HttpGet("paygun/{gunname}")]
+        public IActionResult PayGun( string gunname)
+        {
+            Player player = (Player)HttpContext.Items["Player"];
+            //return Ok(_playerService.AllGuns(player.Name).Where(c => c.Unlocked == true));
+            return Ok(new { message = "Template for pay gun " + gunname});
+        }
+
+        [Authorize]
+        [HttpGet("lvlupgun/{gunname}")]
+        public IActionResult LvlUpGum(string gunname)
+        {
+            Player player = (Player)HttpContext.Items["Player"];
+            //return Ok(_playerService.AllGuns(player.Name).Where(c => c.Unlocked == true));
+            return Ok(new { message = "Template for level up gun " + gunname });
+        }
+
+        [Authorize]
+        [HttpGet("paycharacter/{charactername}")]
+        public IActionResult PayCharacter(string charactername)
+        {
+            Player player = (Player)HttpContext.Items["Player"];
+            //return Ok(_playerService.AllGuns(player.Name).Where(c => c.Unlocked == true));
+            return Ok(new { message = "Template for pay character " + charactername });
+        }
+
 
     }
 }
