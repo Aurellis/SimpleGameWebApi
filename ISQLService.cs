@@ -9,11 +9,12 @@ namespace TestTaskGame
 {
     public interface ISQLService
     {       
-        bool Register(Player player);
-        bool Pay(string playerName, string itemName);
+        bool Register(Player player);       
         Player GetPlayer(Player player);
         List<Gun> GetGuns(string playerName);
-        List<Character> GetCharacters(string playerName);        
+        List<Character> GetCharacters(string playerName);
+        bool PayItem(string playerName, string itemName);
+        bool UpItem(string playerName, string itemName);
     }
 
     public class SQLService : ISQLService
@@ -30,64 +31,53 @@ namespace TestTaskGame
         private DataTable GetData( string query)
         {
             SqlConnection connection = new SqlConnection(_connString);
-
             DataTable dataTable = new DataTable();
 
             try
             {
                 connection.Open();
-
                 SqlCommand command = connection.CreateCommand();
                 command.CommandText = query;
-
-                SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
-                
+                SqlDataAdapter adapter = new SqlDataAdapter(query, connection);                
                 adapter.Fill(dataTable);
-
-            }
-            catch (System.Exception ex)
-            {
-                string mes = ex.Message;
-            }
-            finally
-            {
-                connection.Close();
-                connection.Dispose();
-            }
-
-            return dataTable;
-        }
-
-        private void AddData( string query)
-        {
-            SqlConnection connection = new SqlConnection(_connString);
-            try
-            {
-                connection.Open();
-
-                SqlCommand command = connection.CreateCommand();
-                command.CommandText = query;
-                command.ExecuteNonQuery();                
-
             }
             catch (System.Exception)
             {
-
             }
             finally
             {
                 connection.Close();
                 connection.Dispose();
             }
+            return dataTable;
+        }
 
+        private int AddData( string query)
+        {
+            SqlConnection connection = new SqlConnection(_connString);
+            int count = 0;
+            try
+            {
+                connection.Open();
+                SqlCommand command = connection.CreateCommand();
+                command.CommandText = query;
+                count = command.ExecuteNonQuery(); 
+            }
+            catch (System.Exception )
+            {
+            }
+            finally
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+            return count;
         }
 
         public List<Character> GetCharacters(string playerName)
         {
             string query = "select *, case when exists(select char_name from players_characters where player_name = '" + playerName + "' and char_name = characters.char_name) then 1 else 0 end as char_unlocked from characters ";
-
             DataTable charTable = GetData(query);
-
             List<Character> allCharacters = new List<Character>();
 
             for (int i = 0; i < charTable.Rows.Count; i++)
@@ -102,9 +92,7 @@ namespace TestTaskGame
             foreach (var character in allCharacters)
             {
                 query = " exec GetGunsCharacter '" + playerName+ "' ,'"+character.Name+"' ";
-
                 DataTable gunTable = GetData(query);
-
                 character.AvailableGuns = new List<Gun>();
 
                 for (int i = 0; i < gunTable.Rows.Count; i++)
@@ -120,20 +108,15 @@ namespace TestTaskGame
                         RechargeRate = gunTable.Rows[i].Field<int>("gun_recharge_rate"),
                         Unlocked = Convert.ToBoolean(gunTable.Rows[i].Field<int>("gun_unlocked"))
                     });
-                }
-                
+                }                
             }
-
             return allCharacters;
-
         }
 
         public List<Gun> GetGuns(string playerName)
         {
             string query = "exec GetGuns '"+ playerName + "'";
-
             DataTable gunTable = GetData(query);
-
             List<Gun> allGuns = new List<Gun>();
 
             for (int i = 0; i < gunTable.Rows.Count; i++)
@@ -148,14 +131,12 @@ namespace TestTaskGame
                                                    Unlocked = Convert.ToBoolean(gunTable.Rows[i].Field<int>("gun_unlocked"))
                                                   } );
             }
-
             return allGuns;
         }
 
         public Player GetPlayer(Player player)
         {
             string query;
-
             if (player.Password is null)
             {
                  query = "select * from players where player_name ='" + player.Name +"'";
@@ -180,15 +161,8 @@ namespace TestTaskGame
                     Level = playerTable.Rows[0].Field<int>("player_lvl"),
                     Password = playerTable.Rows[0].Field<string>("player_password"),
                 };
-
                 return dbPlayer;
             }
-
-        }
-
-        public bool Pay(string playerName, string itemName)
-        {
-            throw new System.NotImplementedException();
         }
 
         public bool Register(Player player)
@@ -204,6 +178,27 @@ namespace TestTaskGame
                 AddData(query);
                 return true;
             }
+        }
+
+        public bool PayItem(string playerName, string itemName)
+        {
+            string query = "exec BuyItem '"+ playerName + "', '"+ itemName + "'";
+            if (AddData(query) == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool UpItem(string playerName, string itemName)
+        {
+            string query = "exec UpItem '" + playerName + "', '" + itemName + "'";
+
+            if (AddData(query) == 0)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

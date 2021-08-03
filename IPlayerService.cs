@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 
@@ -18,6 +17,8 @@ namespace TestTaskGame
         Player GetByName(string name);
         List<Gun> AllGuns(string name);
         List<Character> AllCharacters(string name);
+        bool PayItem(string playerName, string itemName);
+        bool UpGun(string playerName, string itemName);
     }
 
     public class PlayerService : IPlayerService
@@ -70,6 +71,16 @@ namespace TestTaskGame
             return _sqlService.GetCharacters(name);
         }
 
+        public bool PayItem(string playerName, string itemName)
+        {
+            return _sqlService.PayItem(playerName, itemName);
+        }
+
+        public bool UpGun(string playerName, string itemName)
+        {
+            return _sqlService.UpItem(playerName, itemName);
+        }
+
         private string GenToken(Player player)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -82,6 +93,6 @@ namespace TestTaskGame
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
-        }
+        }        
     }
 }

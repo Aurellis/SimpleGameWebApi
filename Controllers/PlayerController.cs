@@ -1,18 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace TestTaskGame.Controllers
 {
-    
+
     [Route("api/[controller]")]
     [ApiController]
     public class PlayerController : ControllerBase
@@ -90,31 +83,60 @@ namespace TestTaskGame.Controllers
         }
 
         [Authorize]
-        [HttpGet("paygun/{gunname}")]
+        [HttpGet("pay/gun/{gunname}")]
         public IActionResult PayGun( string gunname)
         {
             Player player = (Player)HttpContext.Items["Player"];
-            //return Ok(_playerService.AllGuns(player.Name).Where(c => c.Unlocked == true));
-            return Ok(new { message = "Template for pay gun " + gunname});
+
+            Player playerTek = _playerService.GetByName(player.Name);
+
+            if (_playerService.AllGuns(player.Name).Where(c => c.Name == gunname  && c.Unlocked == false && c.Price < playerTek.Coins).Count() != 0 )
+            {
+                if (_playerService.PayItem(player.Name, gunname))
+                {
+                    return Ok(new { message = "Payed" });
+                }  
+            }
+            return Ok(new { message = "Failed pay" });            
         }
 
         [Authorize]
-        [HttpGet("lvlupgun/{gunname}")]
+        [HttpGet("pay/gun/up/{gunname}")]
         public IActionResult LvlUpGum(string gunname)
         {
             Player player = (Player)HttpContext.Items["Player"];
-            //return Ok(_playerService.AllGuns(player.Name).Where(c => c.Unlocked == true));
-            return Ok(new { message = "Template for level up gun " + gunname });
+            Player playerTek = _playerService.GetByName(player.Name);
+
+            if (_playerService.AllGuns(player.Name).Where(c => c.Name == gunname && c.Unlocked == true && c.Price < playerTek.Coins ).Count() != 0)
+            {
+                if (_playerService.UpGun(playerTek.Name, gunname))
+                {
+                    return Ok(new { message = "Level Up" });
+                }                
+            }
+
+            return Ok(new { message = "Failed Level Up" });
+
         }
 
         [Authorize]
-        [HttpGet("paycharacter/{charactername}")]
+        [HttpGet("pay/character/{charactername}")]
         public IActionResult PayCharacter(string charactername)
         {
             Player player = (Player)HttpContext.Items["Player"];
-            return Ok(new { message = "Template for pay character " + charactername });
-        }
 
+            Player playerTek = _playerService.GetByName(player.Name);
+
+            if (_playerService.AllCharacters(player.Name).Where(c => c.Name == charactername && c.Unlocked == false && c.Price < playerTek.Coins).Count() != 0)
+            {
+                if (_playerService.PayItem(player.Name, charactername))
+                {
+                    return Ok(new { message = "Payed" });
+                }
+            }
+
+            return Ok(new { message = "Failed pay" });
+        }
 
     }
 }
