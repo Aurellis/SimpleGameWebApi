@@ -1,0 +1,27 @@
+Описание методов API
+
+Тестировалось через Postman 
+
+GET /api/player - информация о игроке (требует авторизации)
+
+POST /api/player/register - регистрация игрока
+принимает json вида { "name": "playerName", "password": "playerPassword" }
+
+POST /api/player/autentificate - авторизация (вход)
+принимает json вида { "name": "playerName", "password": "playerPassword" }
+отдает информацию о игроке и токен для аутентификации
+
+GET /api/player/allguns  - информация о всех пушках
+
+GET /api/player/allcharacters - информация о всех персонажах
+
+GET /api/player/myguns - информация о купленных пушках игрока
+
+GET /api/player/mycharacters - информация о купленных персонажах игрока
+
+GET /api/player/pay/gun/{gunName} - покупка пушки с именем  {gunName}
+
+GET /api/player/pay/gun/up/{gunName} - прокачка уровня доступной игроку пушки с именем {gunName}
+
+GET /api/player/pay/character/{characterName} - покупка персонажа с именем {characterName}
+
